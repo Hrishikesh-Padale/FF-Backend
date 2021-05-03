@@ -4,16 +4,40 @@ from webapp.serializers import *
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import *
-import csv
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import yfinance as yf
 
 # Create your views here.
 
-@api_view(['GET'])
+#function to get the stocks by Ticker
+def get_stocks(request,Ticker):
+	data = yf.download(tickers=Ticker,period='1d', interval='1m')
+	asset = pd.DataFrame(data['Adj Close'])
+	#plt.plot(asset, color='red', linewidth=2)
+	#plt.title('BTX Performance')
+	#plt.ylabel('Price ($)')
+	#plt.xlabel('Date')
+	#plt.show()
+	json = data.to_json(orient='records')
+	return HttpResponse(json)
+
 def index(request):
-	#add_stock()	#add stock instances
+	return HttpResponse("Index Page")
+
+#def news_with_ticker(request,Ticker):
+
+
+
+'''@api_view(['GET'])
+def index(request):
+	if not Stocks.objects.all():
+		add_stock()	#add stock instances
 	objects = Stocks.objects.all()
 	serializer = StocksSerializer(objects,many=True) #serialize 
 	#print(serializer.data[:10])
+	print(type(serializer))
 	return Response(serializer.data) #render the json 
 
 @api_view(['GET'])
@@ -174,5 +198,5 @@ def add_stock():
 			new_stock = Stocks(name=name,price=price,change=change,percent_change=percent_change,
 							   volume=volume,avg_volume=avg_volume,market_cap=market_cap,pe_ratio=pe_ratio)
 			new_stock.save()
-	
+'''
 
