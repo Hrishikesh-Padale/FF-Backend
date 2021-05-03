@@ -8,10 +8,18 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import yfinance as yf
+import json
+import requests
+from monkeylearn import MonkeyLearn
+import requests
+from bs4 import BeautifulSoup
+from openpyxl import load_workbook
+
 
 # Create your views here.
 
 #function to get the stocks by Ticker
+@api_view(['GET'])
 def get_stocks(request,Ticker):
 	data = yf.download(tickers=Ticker,period='1d', interval='1m')
 	asset = pd.DataFrame(data['Adj Close'])
@@ -21,12 +29,92 @@ def get_stocks(request,Ticker):
 	#plt.xlabel('Date')
 	#plt.show()
 	json = data.to_json(orient='records')
-	return HttpResponse(json)
+
+	#response to be returned to frontend
+	return Response(json)
 
 def index(request):
 	return HttpResponse("Index Page")
 
-#def news_with_ticker(request,Ticker):
+#funtion to get top headlines from a particular ticker input by scrapping function
+@api_view(['GET'])
+def news_with_ticker(request,Ticker):
+	url='https://finance.yahoo.com/quote/{}'.format(str(Ticker))	
+	#print("Tick name" +str(list2[c]))
+	r = requests.get(url)
+	soup=BeautifulSoup(r.text,'html.parser')
+	if(soup):
+		price = soup.find('table',{'class': 'W(100%)'}).find("tbody")
+		price2=price.find('tr',{'data-reactid':'40'})
+		price3=price.find('tr',{'data-reactid':'45'})
+		if(price2 !=None and price3!=None):
+			url = ('https://newsapi.org/v2/everything?'
+			       'q={}&'
+			       'from=2021-05-02&'
+			       'sortBy=popularity&'
+			       'apiKey=9a88c0422d2745318025da04a984d41c'.format(str(Ticker))) # enter api key
+			
+			ml= MonkeyLearn("a744832a7e2b2ac8bb792369a68e378430091137") # enter api key
+			model_id = 'cl_pi3C7JiL' # keep model id same
+			response = requests.get(url)
+			json_dict=(response.json())
+			sentiment=[]
+			data = {}
+			data['Details'] = []
+			for i in range(10):
+				sentiment.append(json_dict['articles'][i]['description'])
+					
+			for i in range(len(sentiment)):
+				result = ml.classifiers.classify(model_id,[sentiment[i]])
+				data['Details'].append({
+			    	'Date': '2021-04-22',
+			    	'Tikr': '{}'.format(str(Ticker)),
+			    	'Text': str(result.body[0]['text']),
+			    	'Sentiment': str(result.body[0]['classifications'][0]['tag_name']),
+			    	'Previous Close':str(price2.text.replace("Previous Close","")),
+			    	'Open':str(price3.text.replace("Open",""))
+				})
+
+				#print("Date: "+str(date))
+				#print("Tikr:" +str(tikr))
+				#print("Text:"+str(result.body[0]['text']))
+				#print("Sentiment: "+str(result.body[0]['classifications'][0]['tag_name']))
+
+			output = []
+			j = 1
+			for i in data['Details']:
+				#print("---------------------------------------------------------------------------------------------")
+				output.append({j:i['Text']})
+				j += 1
+				#print("---------------------------------------------------------------------------------------------")
+			#print(output)
+
+
+			#response to be returned to frontend -> json format
+			#returning as rest_framework response for react JS
+			return Response(output)
+	else:
+		return HttpResponse("Not Found")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
