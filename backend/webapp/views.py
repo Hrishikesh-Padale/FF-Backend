@@ -109,7 +109,7 @@ def specialcharrem(text):
 
 @api_view(['GET'])	
 def webscrapping(request,Ticker):
-	url='https://finance.yahoo.com/quote/AAPL'	
+	url=f'https://finance.yahoo.com/quote/{Ticker}'	
 	#print("Tick name" +str(list2[c]))
 	r = requests.get(url)
 	soup=BeautifulSoup(r.text,'html.parser')
@@ -119,7 +119,7 @@ def webscrapping(request,Ticker):
 		price3=price.find('tr',{'data-reactid':'45'})
 		if(price2 !=None and price3!=None):
 			url = ('https://newsapi.org/v2/everything?'
-			       'q=AAPL&'
+			       f'q={Ticker}&'
 			       'from=2021-05-02&'
 			       'sortBy=popularity&'
 			       'apiKey=9a88c0422d2745318025da04a984d41c') # enter api key
@@ -138,7 +138,7 @@ def webscrapping(request,Ticker):
 				result = ml.classifiers.classify(model_id,[sentiment[i]])
 				data['Details'].append({
 			    	'Date': '2021-04-22',
-			    	'Tikr': 'AAPL',
+			    	'Tikr': Ticker,
 			    	'Text': specialcharrem(str(result.body[0]['text'])),
 			    	'Sentiment': str(result.body[0]['classifications'][0]['tag_name']),
 			    	'Previous Close':str(price2.text.replace("Previous Close","")),
