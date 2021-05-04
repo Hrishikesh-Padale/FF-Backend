@@ -23,7 +23,7 @@ from .ml_model import *
 
 
 def load_sentiment_model():
-	MODEL = load_model('/home/hrishi/Desktop/FF-Backend/backend/webapp/sentiment_data/SA.h5')
+	MODEL = load_model('webapp/sentiment_data/SA.h5')
 
 #Create your views here.
 #API to get the stocks by Ticker -->Arguments required = Ticker , start="2017-01-01", end="2017-04-30"
