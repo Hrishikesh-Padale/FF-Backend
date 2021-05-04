@@ -13,18 +13,13 @@ import requests
 from monkeylearn import MonkeyLearn
 from bs4 import BeautifulSoup
 from openpyxl import load_workbook
-import re
-import joblib
-from keras.models import load_model
-import gensim
-from nltk.stem import WordNetLemmatizer 
-import nltk
 from .ml_model import *
-import getpass
+from .SAnalyser import *
 
+# def load_sentiment_model():
+# 	MODEL = load_model(f'/home/{getpass.getuser()}/Desktop/FF-Backend/backend/webapp/templates/webapp/sentiment_data/SA.h5')
 
-def load_sentiment_model():
-	MODEL = load_model(f'/home/{getpass.getuser()}/Desktop/FF-Backend/backend/webapp/templates/webapp/sentiment_data/SA.h5')
+SA = SAnalysis()
 
 #Create your views here.
 #API to get the stocks by Ticker -->Arguments required = Ticker , start="2017-01-01", end="2017-04-30"
@@ -60,9 +55,9 @@ def news_with_ticker(request,Ticker):
 			       'q={}&'
 			       'from=2021-05-02&'
 			       'sortBy=popularity&'
-			       'apiKey=9a88c0422d2745318025da04a984d41c'.format(str(Ticker))) # enter api key
+			       'apiKey=e42cf979dc004ba6abfca80bb7fce05d'.format(str(Ticker))) # enter api key
 			
-			ml= MonkeyLearn("a744832a7e2b2ac8bb792369a68e378430091137") # enter api key
+			ml= MonkeyLearn("3fa9643fa860ec3e9376994cd1fc534b850d4c7d") # enter api key
 			model_id = 'cl_pi3C7JiL' # keep model id same
 			response = requests.get(url)
 			json_dict=(response.json())
@@ -108,7 +103,7 @@ def specialcharrem(text):
 	cleantext = re.sub(cleanr, '',textrem)
 	string_encode = cleantext.encode("ascii", "ignore")
 	string_decode = string_encode.decode()
-	print(string_decode)	
+	#print(string_decode)	
 	return string_decode
 
 
@@ -129,7 +124,7 @@ def webscrapping(request,Ticker):
 			       'sortBy=popularity&'
 			       'apiKey=9a88c0422d2745318025da04a984d41c') # enter api key
 			
-			ml= MonkeyLearn("a744832a7e2b2ac8bb792369a68e378430091137") # enter api key
+			ml= MonkeyLearn("002b6c923eae7affc804cd7fdce19221871bf78d") # enter api key
 			model_id = 'cl_pi3C7JiL' # keep model id same
 			response = requests.get(url)
 			json_dict=(response.json())
@@ -150,44 +145,38 @@ def webscrapping(request,Ticker):
 			    	'Open':str(price3.text.replace("Open",""))
 				})
 
+			
+			sentiment_output = []
+			for sentence in data['Details']:
+				sentiment_output.append(SA.SentimentAnalyzer(sentence['Text'])[0])
+
+			zerocount = 0
+			onecount = 0
+			twocount = 0
+			print(sentiment_output)
+			for i in sentiment_output:
+				if np.argmax(i) == 0:
+					zerocount += 1
+				elif np.argmax(i) == 1:
+					onecount += 1
+				elif np.argmax(i) == 2:
+					twocount += 1
+
+			percent_values = {"Negativity":(zerocount/10)*100,"Neutrality":(onecount/10)*100,"Positivity":(twocount/10)*100}
+			print(percent_values)
 
 
-'''
+			return HttpResponse("Done")
+
+
+
+
 #-------------------------------------------Sentiment Analysis Functions---------------------------------------------#	
 
 
-def lemmatize(text):
-	return WordNetLemmatizer().lemmatize(text, pos='v')
-
-def preprocess(raw_text):
-	# keep only words
-	letters_only_text = re.sub("[^a-zA-Z]", " ", raw_text)
-	# convert to lower case and split 
-	words = letters_only_text.lower()
-	return [lemmatize(token) for token in gensim.utils.simple_preprocess(words) ]
-
-def SentimentAnalyzer(doc): 
-	doc=' '.join(preprocess(doc))
-	embedding=[]
-	with open('./sentiment_data/dict.pkl', 'rb') as handle:
-	    corpus_tfidf_vectorizer=joblib.load(handle)
-	corpus_vocabulary=corpus_tfidf_vectorizer.vocabulary_
-	sent_emb=np.zeros(487)
-	j=0
-	for w in doc.split():
-		try:
-			sent_emb[j]=corpus_vocabulary[w]
-			j+=1
-		except:
-			continue
-	embedding.append(sent_emb)
-	embeddings=np.array(embedding)
-	#print(len(embedding))
-	return MODEL.predict(embeddings)
-
 
 #--------------------------------------------------------------------------------------------------------------------#
-'''
+
 #import ML module 
 @api_view(['GET'])
 def predict(request,Ticker):
