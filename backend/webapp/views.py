@@ -11,13 +11,20 @@ import yfinance as yf
 import json
 import requests
 from monkeylearn import MonkeyLearn
-import requests
 from bs4 import BeautifulSoup
 from openpyxl import load_workbook
+import re
+import joblib
+from keras.models import load_model
+import gensim
+from nltk.stem import WordNetLemmatizer 
+import nltk
 
 
-# Create your views here.
+def load_sentiment_model():
+	MODEL = load_model('/home/hrishi/Desktop/FF-Backend/backend/webapp/sentiment_data/SA.h5')
 
+#Create your views here.
 #API to get the stocks by Ticker -->Arguments required = Ticker , start="2017-01-01", end="2017-04-30"
 @api_view(['GET'])
 def get_stocks(request,Ticker):
@@ -74,20 +81,12 @@ def news_with_ticker(request,Ticker):
 			    	'Open':str(price3.text.replace("Open",""))
 				})
 
-				#print("Date: "+str(date))
-				#print("Tikr:" +str(tikr))
-				#print("Text:"+str(result.body[0]['text']))
-				#print("Sentiment: "+str(result.body[0]['classifications'][0]['tag_name']))
-
 			output = []
 			j = 1
 			for i in data['Details']:
-				#print("---------------------------------------------------------------------------------------------")
 				output.append({j:i['Text']})
 				j += 1
-				#print("---------------------------------------------------------------------------------------------")
-			#print(output)
-
+			
 
 			#response to be returned to frontend -> json format
 			#returning as rest_framework response for react JS
@@ -95,26 +94,104 @@ def news_with_ticker(request,Ticker):
 	else:
 		return HttpResponse("Not Found")
 
+
+
+def specialcharrem(text):
+	textrem5=text.replace("\\","")
+	textrem4=textrem5.replace("\"","")
+	textrem2=textrem4.replace("\n",'')
+	textrem3=textrem2.replace("\r",'')
+	textrem=textrem3.replace("<ol><li>",'');
+	cleanr = re.compile(r'<[^>]+>')
+	cleantext = re.sub(cleanr, '',textrem)
+	string_encode = cleantext.encode("ascii", "ignore")
+	string_decode = string_encode.decode()
+	print(string_decode)	
+	return string_decode
+
+
+'''@api_view(['GET'])	
+def webscrapping(request,Ticker):
+	url='https://finance.yahoo.com/quote/AAPL'	
+	#print("Tick name" +str(list2[c]))
+	r = requests.get(url)
+	soup=BeautifulSoup(r.text,'html.parser')
+	if(soup):
+		price = soup.find('table',{'class': 'W(100%)'}).find("tbody")
+		price2=price.find('tr',{'data-reactid':'40'})
+		price3=price.find('tr',{'data-reactid':'45'})
+		if(price2 !=None and price3!=None):
+			url = ('https://newsapi.org/v2/everything?'
+			       'q=AAPL&'
+			       'from=2021-05-02&'
+			       'sortBy=popularity&'
+			       'apiKey=9a88c0422d2745318025da04a984d41c') # enter api key
+			
+			ml= MonkeyLearn("a744832a7e2b2ac8bb792369a68e378430091137") # enter api key
+			model_id = 'cl_pi3C7JiL' # keep model id same
+			response = requests.get(url)
+			json_dict=(response.json())
+			sentiment=[]
+			data = {}
+			data['Details'] = []
+			for i in range(10):
+				sentiment.append(json_dict['articles'][i]['description'])
+					
+			for i in range(len(sentiment)):
+				result = ml.classifiers.classify(model_id,[sentiment[i]])
+				data['Details'].append({
+			    	'Date': '2021-04-22',
+			    	'Tikr': 'AAPL',
+			    	'Text': specialcharrem(str(result.body[0]['text'])),
+			    	'Sentiment': str(result.body[0]['classifications'][0]['tag_name']),
+			    	'Previous Close':str(price2.text.replace("Previous Close","")),
+			    	'Open':str(price3.text.replace("Open",""))
+				})
+
+
+#-------------------------------------------Sentiment Analysis Functions---------------------------------------------#	
+
+
+def lemmatize(text):
+	return WordNetLemmatizer().lemmatize(text, pos='v')
+
+def preprocess(raw_text):
+	# keep only words
+	letters_only_text = re.sub("[^a-zA-Z]", " ", raw_text)
+	# convert to lower case and split 
+	words = letters_only_text.lower()
+	return [lemmatize(token) for token in gensim.utils.simple_preprocess(words) ]
+
+def SentimentAnalyzer(doc): 
+	doc=' '.join(preprocess(doc))
+	embedding=[]
+	with open('./sentiment_data/dict.pkl', 'rb') as handle:
+	    corpus_tfidf_vectorizer=joblib.load(handle)
+	corpus_vocabulary=corpus_tfidf_vectorizer.vocabulary_
+	sent_emb=np.zeros(487)
+	j=0
+	for w in doc.split():
+		try:
+			sent_emb[j]=corpus_vocabulary[w]
+			j+=1
+		except:
+			continue
+	embedding.append(sent_emb)
+	embeddings=np.array(embedding)
+	#print(len(embedding))
+	return MODEL.predict(embeddings)
+
+
+#--------------------------------------------------------------------------------------------------------------------#
+
+#import ML module 
 #@api_view(['GET'])
-#def prediction(request):
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#def predict(request,Ticker):
+	obj = TechnicalPricePrediction(Ticker)
+	output = obj.predict()
+	output = [{"Prediction Result":output}]
+	return Response(output)
+'''
 
 
 
