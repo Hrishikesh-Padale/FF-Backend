@@ -10,7 +10,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 from keras.models import Sequential, load_model
 from keras.layers import LSTM, Dense, Dropout, BatchNormalization
-from credentials.token import key
+from .ml_data.credentials.token import key
 
 class TechnicalPricePrediction():
     def __init__(self, ticker):
@@ -21,7 +21,7 @@ class TechnicalPricePrediction():
 
     def __get_data(self):
         ticker = self.__ticker
-        path = f'datasets/{ticker}.csv'
+        path = f'/home/hrishi/Desktop/FF-Backend/backend/webapp/ml_data/datasets/{ticker}.csv'
         if(not os.path.isfile(path)):
             print("Made an API call")
             df = pdr.get_data_tiingo(ticker, api_key=key)
@@ -68,7 +68,7 @@ class TechnicalPricePrediction():
 
     def __train(self):
         time_step = self.__time_step
-        path = f'models/{self.__ticker}.h5'
+        path = f'/home/hrishi/Desktop/FF-Backend/backend/webapp/ml_data/models/{self.__ticker}.h5'
         if os.path.exists(path):
             model = load_model(path)
             return model
@@ -79,17 +79,17 @@ class TechnicalPricePrediction():
         validation_X, validation_Y = self.__load_dataset(df_scaled[percent_80:])
         model = self.__define_model(train_X.shape[1:]) 
         model.fit(train_X, train_Y, validation_data=(validation_X, validation_Y), epochs=100, batch_size=32, verbose=1)
-        model.save(f'models/{self.__ticker}.h5')
+        model.save(f'/home/hrishi/Desktop/FF-Backend/backend/webapp/ml_data/models/{self.__ticker}.h5')
 
         return model
 
 
-    def predict(self, lazy=False):
+    def predict(self, days = 1, lazy=False):
         model = self.__train()
 
         df = None
         if lazy:
-            df = pd.read_csv(f'datasets/{self.__ticker}.csv')
+            df = pd.read_csv(f'/home/hrishi/Desktop/FF-Backend/backend/webapp/ml_data/datasets/{self.__ticker}.csv')
         else:
             df = pdr.get_data_tiingo(self.__ticker, api_key=key)
             
@@ -99,16 +99,19 @@ class TechnicalPricePrediction():
         time_step = self.__time_step
 
         l = len(df_price) - time_step # 60 => time_step
-        op_X = self.__load_dataset(df_price)
         op_X = []
-        x = []
-        for i in range(time_step):
-            x.append(df_price[l-i-1])
-        op_X.append(x)
-        op_X = np.array(op_X)
+        op = []
+        op_X.append(df_price[l:])
+        op_X = np.array(op_X).reshape(1,-1,1)
         op_predict = model.predict(op_X)
         op_Y = self.__scale.inverse_transform(op_predict)
-        return op_Y[0][0]
-
-test = TechnicalPricePrediction('TTWO')
-print("\nPrediction:",test.predict())
+        op.append(op_Y)
+        for day in range(days-1):
+            op_X = np.append(op_X, self.__scale.transform(np.array(op_Y).reshape(-1,1))) # append newly predicted price
+            op_X = op_X.reshape(1,-1, 1)
+            op_X = np.delete(op_X, [0]).reshape(1,-1,1) # remove zeroth element
+            op_predict = model.predict(op_X)
+            op_Y = self.__scale.inverse_transform(op_predict)
+            op.append(op_Y)
+        print(op)
+        return op[-1][0]

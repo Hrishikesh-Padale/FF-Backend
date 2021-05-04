@@ -19,6 +19,7 @@ from keras.models import load_model
 import gensim
 from nltk.stem import WordNetLemmatizer 
 import nltk
+from .ml_model import *
 
 
 def load_sentiment_model():
@@ -110,7 +111,7 @@ def specialcharrem(text):
 	return string_decode
 
 
-'''@api_view(['GET'])	
+@api_view(['GET'])	
 def webscrapping(request,Ticker):
 	url='https://finance.yahoo.com/quote/AAPL'	
 	#print("Tick name" +str(list2[c]))
@@ -149,6 +150,8 @@ def webscrapping(request,Ticker):
 				})
 
 
+
+'''
 #-------------------------------------------Sentiment Analysis Functions---------------------------------------------#	
 
 
@@ -183,15 +186,14 @@ def SentimentAnalyzer(doc):
 
 
 #--------------------------------------------------------------------------------------------------------------------#
-
+'''
 #import ML module 
-#@api_view(['GET'])
-#def predict(request,Ticker):
+@api_view(['GET'])
+def predict(request,Ticker):
 	obj = TechnicalPricePrediction(Ticker)
 	output = obj.predict()
 	output = [{"Prediction Result":output}]
 	return Response(output)
-'''
 
 
 
