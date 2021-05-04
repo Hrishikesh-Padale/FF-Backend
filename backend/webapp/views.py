@@ -20,10 +20,11 @@ import gensim
 from nltk.stem import WordNetLemmatizer 
 import nltk
 from .ml_model import *
+import getpass
 
 
 def load_sentiment_model():
-	MODEL = load_model('webapp/sentiment_data/SA.h5')
+	MODEL = load_model(f'/home/{getpass.getuser()}/Desktop/FF-Backend/backend/webapp/templates/webapp/sentiment_data/SA.h5')
 
 #Create your views here.
 #API to get the stocks by Ticker -->Arguments required = Ticker , start="2017-01-01", end="2017-04-30"

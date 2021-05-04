@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import getpass
 import pandas_datareader as pdr
 import pandas as pd
 import numpy as np
@@ -10,7 +10,7 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error
 from keras.models import Sequential, load_model
 from keras.layers import LSTM, Dense, Dropout, BatchNormalization
-from webapp.ml_data.credentials.token import key
+from .templates.webapp.ml_data.credentials.token import key
 
 class TechnicalPricePrediction():
     def __init__(self, ticker):
@@ -21,7 +21,7 @@ class TechnicalPricePrediction():
 
     def __get_data(self):
         ticker = self.__ticker
-        path = f'webapp/ml_data/datasets/{ticker}.csv'
+        path = f'/home/{getpass.getuser()}/Desktop/FF-Backend/backend/webapp/templates/webapp/ml_data/datasets/{ticker}.csv'
         if(not os.path.isfile(path)):
             print("Made an API call")
             df = pdr.get_data_tiingo(ticker, api_key=key)
@@ -68,7 +68,7 @@ class TechnicalPricePrediction():
 
     def __train(self):
         time_step = self.__time_step
-        path = f'webapp/ml_data/models/{self.__ticker}.h5'
+        path = f'/home/{getpass.getuser()}/Desktop/FF-Backend/backend/webapp/templates/webapp/ml_data/models/{self.__ticker}.h5'
         if os.path.exists(path):
             model = load_model(path)
             return model
@@ -79,7 +79,7 @@ class TechnicalPricePrediction():
         validation_X, validation_Y = self.__load_dataset(df_scaled[percent_80:])
         model = self.__define_model(train_X.shape[1:]) 
         model.fit(train_X, train_Y, validation_data=(validation_X, validation_Y), epochs=100, batch_size=32, verbose=1)
-        model.save(f'webapp/ml_data/models/{self.__ticker}.h5')
+        model.save(f'/home/{getpass.getuser()}/Desktop/FF-Backend/backend/webapp/templates/webapp/ml_data/models/{self.__ticker}.h5')
 
         return model
 
@@ -89,7 +89,7 @@ class TechnicalPricePrediction():
 
         df = None
         if lazy:
-            df = pd.read_csv(f'webapp/ml_data/datasets/{self.__ticker}.csv')
+            df = pd.read_csv(f'/home/{getpass.getuser()}/Desktop/FF-Backend/backend/webapp/templates/webapp/ml_data/datasets/{self.__ticker}.csv')
         else:
             df = pdr.get_data_tiingo(self.__ticker, api_key=key)
             
