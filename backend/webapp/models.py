@@ -1,5 +1,5 @@
 from django.db import models
-#avichal.agrawal@credit-suisse.com
+
 # Create your models here.
 
 class Stocks(models.Model):

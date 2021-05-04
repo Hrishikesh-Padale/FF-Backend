@@ -18,7 +18,7 @@ from openpyxl import load_workbook
 
 # Create your views here.
 
-#function to get the stocks by Ticker
+#API to get the stocks by Ticker -->Arguments required = Ticker , start="2017-01-01", end="2017-04-30"
 @api_view(['GET'])
 def get_stocks(request,Ticker):
 	data = yf.download(tickers=Ticker,period='1d', interval='1m')
@@ -36,11 +36,10 @@ def get_stocks(request,Ticker):
 def index(request):
 	return HttpResponse("Index Page")
 
-#funtion to get top headlines from a particular ticker input by scrapping function
+#API to get top headlines from a particular ticker input by scrapping function
 @api_view(['GET'])
 def news_with_ticker(request,Ticker):
 	url='https://finance.yahoo.com/quote/{}'.format(str(Ticker))	
-	#print("Tick name" +str(list2[c]))
 	r = requests.get(url)
 	soup=BeautifulSoup(r.text,'html.parser')
 	if(soup):
@@ -96,6 +95,8 @@ def news_with_ticker(request,Ticker):
 	else:
 		return HttpResponse("Not Found")
 
+#@api_view(['GET'])
+#def prediction(request):
 
 
 
