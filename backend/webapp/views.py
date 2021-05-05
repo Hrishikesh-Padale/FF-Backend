@@ -23,17 +23,21 @@ SA = SAnalysis()
 
 #Create your views here.
 #API to get the stocks by Ticker -->Arguments required = Ticker , start="2017-01-01", end="2017-04-30"
-@api_view(['GET'])
-def get_stocks(request,Ticker):
-	data = yf.download(tickers=Ticker,period='1d', interval='1m')
-	asset = pd.DataFrame(data['Adj Close'])
+@api_view(['POST'])
+def get_stocks(request):
+	#print(request.data)
+	tick = request.data['name']
+	start = request.data['startdate']
+	end = request.data['enddate']
+	data = yf.download(tickers=tick,start=start,end=end)
+	#asset = pd.DataFrame(data['Adj Close'])
 	#plt.plot(asset, color='red', linewidth=2)
 	#plt.title('BTX Performance')
 	#plt.ylabel('Price ($)')
 	#plt.xlabel('Date')
 	#plt.show()
 	json = data.to_json(orient='records')
-
+	print(json)
 	#response to be returned to frontend
 	return Response(json)
 
@@ -42,7 +46,7 @@ def index(request):
 
 #API to get top headlines from a particular ticker input by scraping function
 @api_view(['GET'])
-def news_with_ticker(request,Ticker):
+def news_with_ticker(request):
 	url='https://finance.yahoo.com/quote/{}'.format(str(Ticker))	
 	r = requests.get(url)
 	soup=BeautifulSoup(r.text,'html.parser')
@@ -107,8 +111,9 @@ def specialcharrem(text):
 	return string_decode
 
 
-@api_view(['GET'])	
-def webscraping(request,Ticker):
+@api_view(['POST'])	
+def webscraping(request):
+	Ticker = request.data['name']
 	url=f'https://finance.yahoo.com/quote/{Ticker}'	
 	#print("Tick name" +str(list2[c]))
 	r = requests.get(url)
@@ -174,8 +179,9 @@ def webscraping(request,Ticker):
 
 
 #import ML module 
-@api_view(['GET'])
-def predict(request,Ticker):
+@api_view(['POST'])
+def predict(request):
+	Ticker = request.data['name']
 	obj = TechnicalPricePrediction(Ticker)
 	output = obj.predict()
 	output = [{"Prediction Result":output}]
