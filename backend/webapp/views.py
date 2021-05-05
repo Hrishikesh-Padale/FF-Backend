@@ -131,7 +131,8 @@ def webscraping(request,Ticker):
 			sentiment=[]
 			data = {}
 			data['Details'] = []
-			for i in range(10):
+			#print(json_dict)
+			for i in range(len(json_dict['articles'])):
 				sentiment.append(json_dict['articles'][i]['description'])
 					
 			for i in range(len(sentiment)):
@@ -162,7 +163,7 @@ def webscraping(request,Ticker):
 				elif np.argmax(i) == 2:
 					twocount += 1
 
-			percent_values = {"Negativity":(zerocount/10)*100,"Neutrality":(onecount/10)*100,"Positivity":(twocount/10)*100}
+			percent_values = {"Negativity":(zerocount/len(sentiment_output))*100,"Neutrality":(onecount/len(sentiment_output))*100,"Positivity":(twocount/len(sentiment_output))*100}
 			print(percent_values)
 
 			return Response([percent_values])
