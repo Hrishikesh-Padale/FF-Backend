@@ -134,6 +134,8 @@ def webscraping(request,Ticker):
 			#print(json_dict)
 			for i in range(len(json_dict['articles'])):
 				sentiment.append(json_dict['articles'][i]['description'])
+				if i == 9:
+					break
 					
 			for i in range(len(sentiment)):
 				result = ml.classifiers.classify(model_id,[sentiment[i]])
