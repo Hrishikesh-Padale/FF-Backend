@@ -40,7 +40,7 @@ def get_stocks(request,Ticker):
 def index(request):
 	return HttpResponse("Index Page")
 
-#API to get top headlines from a particular ticker input by scrapping function
+#API to get top headlines from a particular ticker input by scraping function
 @api_view(['GET'])
 def news_with_ticker(request,Ticker):
 	url='https://finance.yahoo.com/quote/{}'.format(str(Ticker))	
@@ -108,7 +108,7 @@ def specialcharrem(text):
 
 
 @api_view(['GET'])	
-def webscrapping(request,Ticker):
+def webscraping(request,Ticker):
 	url=f'https://finance.yahoo.com/quote/{Ticker}'	
 	#print("Tick name" +str(list2[c]))
 	r = requests.get(url)
