@@ -6,11 +6,12 @@ from nltk.stem import WordNetLemmatizer
 import nltk
 import getpass
 import numpy as np
+import os
 
 class SAnalysis:
 	
 	def __init__(self):
-		self.model = load_model(f'/home/{getpass.getuser()}/Desktop/FF-Backend/backend/webapp/templates/webapp/sentiment_data/SA.h5')
+		self.model = load_model(f'{os.path.dirname(__file__)}/templates/webapp/sentiment_data/SA.h5')
 
 	def lemmatize(self,text):
 		return WordNetLemmatizer().lemmatize(text, pos='v')
@@ -25,7 +26,7 @@ class SAnalysis:
 	def SentimentAnalyzer(self,doc): 
 		doc=' '.join(self.preprocess(doc))
 		embedding=[]
-		with open(f'/home/{getpass.getuser()}/Desktop/FF-Backend/backend/webapp/templates/webapp/sentiment_data/dict.pkl', 'rb') as handle:
+		with open(f'{os.path.dirname(__file__)}/templates/webapp/sentiment_data/dict.pkl', 'rb') as handle:
 		    corpus_tfidf_vectorizer=joblib.load(handle)
 		corpus_vocabulary=corpus_tfidf_vectorizer.vocabulary_
 		sent_emb=np.zeros(487)
