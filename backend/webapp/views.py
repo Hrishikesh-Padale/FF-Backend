@@ -165,17 +165,10 @@ def webscrapping(request,Ticker):
 			percent_values = {"Negativity":(zerocount/10)*100,"Neutrality":(onecount/10)*100,"Positivity":(twocount/10)*100}
 			print(percent_values)
 
-
-			return HttpResponse("Done")
-
+			return Response([percent_values])
 
 
 
-#-------------------------------------------Sentiment Analysis Functions---------------------------------------------#	
-
-
-
-#--------------------------------------------------------------------------------------------------------------------#
 
 #import ML module 
 @api_view(['GET'])

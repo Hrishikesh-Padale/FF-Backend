@@ -86,7 +86,7 @@ class TechnicalPricePrediction():
 
     def predict(self, days = 1, lazy=False):
         model = self.__train()
-
+        print(model.summary())
         df = None
         if lazy:
             df = pd.read_csv(f'/home/{getpass.getuser()}/Desktop/FF-Backend/backend/webapp/templates/webapp/ml_data/datasets/{self.__ticker}.csv')
